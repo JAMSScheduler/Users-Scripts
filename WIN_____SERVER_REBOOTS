@@ -60,6 +60,29 @@ $VER="4.0"  # 2/10/2015 - hsamm - add logic for ASYNC reboots of servers - with 
 #                                 that needs to be rebooted, and it will do nothing more than perform
 #                                 ONLY the same REBOOT section of this job, without any contingencies.
 
+# the following is an example of one of our JAMS parameter values used as input to this script:
+#
+#
+#
+# these are set up in a JAMS variable folder, and in the JOB setup, the "Acquire from" is set to point to the
+# JAMS variable
+#
+#    psa4islab2v.samcmo.com:ASYNC
+#    psa4islab3v.samcmo.com:ASYNC
+#    sleep120::
+#    psa4islab4v.samcmo.com:Spooler:Microsoft Antimalware Scheduled Scan,ScheduledDefrag:service=Spooler=Running
+#    sleep30::
+#    job001::\SAMC_specalized_jobs\SERVER_REBOOTS\TEST_GROUP\TEST_RYANS_LAB
+#    psa4islab5v.samcmo.com:Spooler::service=W32Time=Running,service=Spooler=Running
+#
+#   The first 2 lines will cause 2 independent jobs to be submitted and ran to reboot the servers
+#   the remaining linew will be processed synchronously 
+#
+
+
+#
+
+
 function fire_up_ASYNC
 {
    param($server)
