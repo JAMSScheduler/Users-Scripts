@@ -1,4 +1,5 @@
 add-pssnapin mvpsi.jams
+# This is a reboot script for windows on steroids.....
 #
 # This will examine the parameters passed, and will attempt to reboot
 # the list of servers, in the order provided, optionally stopping
