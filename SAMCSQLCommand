@@ -1,0 +1,39 @@
+<<COMMAND0>>
+<<COMMAND1>>
+<<COMMAND2>>
+<<COMMAND3>>
+<<COMMAND4>>
+<<COMMAND5>>
+<<COMMAND6>>
+<<COMMAND7>>
+<<COMMAND8>>
+<<COMMAND9>>
+<<COMMANDA>>
+<<COMMANDB>>
+<<COMMANDC>>
+<<COMMANDD>>
+<<COMMANDE>>
+<<COMMANDF>>
+
+This is the same idea, however, the properties execution method is SAMCSQL Command
+
+Settings for the MethodName:  SAMCSQLCommand are:
+
+Method Name - SAMCSQLCommand
+
+Source: Job Module - ParsedSql
+        Default File Extension - sql
+        
+Execution:  Type - Batch
+            Command - sqlcmd -E -b -e -i "{0}
+            
+            Routine location: Assembly - JAMSSQLHost
+                              Class - MVPSI.JAMSSQL.SQLCommandHost
+                  
+Completion: Exit Code Handling - ZeroIsGood
+
+Parameters: leave default values
+
+Template: none
+
+                              
