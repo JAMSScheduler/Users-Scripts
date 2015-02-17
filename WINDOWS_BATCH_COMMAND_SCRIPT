@@ -1,0 +1,27 @@
+<<COMMAND>>
+<<COMMAND1>>
+<<COMMAND2>>
+<<COMMAND3>>
+<<COMMAND4>>
+<<COMMAND5>>
+<<COMMAND6>>
+<<COMMAND7>>
+<<COMMAND8>>
+<<COMMAND9>>
+<<COMMANDA>>
+<<COMMANDB>>
+<<COMMANDC>>
+<<COMMANDD>>
+<<COMMANDE>>
+<<COMMANDF>>
+
+
+
+you gessed it.....  here's a list of the Parameters for this batch job
+
+Type     Prompt                                        Parameter Name
+    Text                                               COMMAND
+    Text                                               COMMAND1
+      .                                                    .
+      .                                                    .
+    Text                                               COMMANDF

@@ -1,0 +1,254 @@
+This process has dual modes of operation.  SYNCHRONOUSLY and ASYNCHRONOUSLY.  ASYNCHRONOUSLY booted servers have a 
+separate JAMS job submitted, one per server.  This job handles the reboot of the server, without any dependencies or 
+contingencies.  SYNCHRONOUSLY booted servers follow the boot order in which the server and additional parameters are
+entered.  Currently the only possible issue on SYNCHRONOUSLY rebooted servers is if one of the servers in the list for
+whatever reason does not come back up.  If this happens, the process will hang indefinitely waiting for that server
+to become available.
+
+This powershell works in 2 modes, one is "TRIAL RUN" the other is "ACTUAL RUN".  TRIAL RUN as it implies only checks on 
+any objects referenced in the paramter list, giving warnings if problems are encountered.  No actual action takes place.
+ACTUAL RUN as it implies, actually peforms the reboots, submition of jobs, etc.
+
+
+
+The WIN_____SERVER_REBOOTS reads a JAMS Variable file consisting of multiple lines.  Each line may be:
+
+paramters are positional and separated by a colon
+
+1) a server... formatting for the server line is:
+      servername:[service[,service...]]:[task[,task...]]:[service=name=state[,service=name=state...]]
+      
+      where:  servername [required] is the name of the server to reboot.
+      
+              service [optional] - is a comma separated list of services to be stopped pre-boot, and insure in a Running
+                                   state post-boot
+                                   
+                                   NOTE: if service is the string "ASYNC" the server is treated as an asynchronously 
+                                         rebooted server.  All other server fields are ignored, a separate JAMS JOB
+                                         is submitted, controlling the rebooting of just the servername specified.
+                                   
+              task [optional] - is a comma separated list of tasks to be ended/disabled pre-boot, and enabled post-boot
+              
+              service=name=state [optional] - is a string stating on post-boot that this service MUST be in this state
+                                              before the boot process is allowed to continue
+                                              
+              
+                                              
+2) a job... formatting for the job line is:
+     jobnnn::JAMS_FULL_PATH_JOBNAME
+     
+     where:   jobnnn - is the string "job" plus a unique number or id
+              
+              JAMS_FULL_PATH_JOBNAME - is the full pathname to the job to be executed
+              
+3) a sleep...  format for the sleep line is:
+     sleepnnn
+     
+     where:  sleepnnn - is the string "sleep" plus an integer of the number of seconds to sleep
+      
+4) Any line starting with the "#" character is treated as a comment
+
+EXAMPLE OF PARAMETER FILE
+
+
+# test for comments too
+# psa4islab2v.samcmo.com:ASYNC
+# psa4islab3v.samcmo.com:ASYNC
+# sleep120::
+psa4islab2v.samcmo.com:Spooler:Microsoft Antimalware Scheduled Scan ,ScheduledDefrag:service=Spooler=Running
+# this is a test for the comments
+sleep30::
+job001::\SAMC_specalized_jobs\SERVER_REBOOTS\TEST_GROUP\TEST_RYANS_LAB
+psa4islab3v.samcmo.com: NULL ,Spooler::service=W32Time=Running , service=Spooler=Running
+
+JAMS LOG from a actual run of the above.....
+
+JAMS Version 6.1.270.0 on PINTJAMS2
+Entry 8200 starting at 2/12/2015 1:46:00 PM
+Submitted by SAMC\ADMINSAMMHE at 2/12/2015 1:46:00 PM
+Executing as samcmo\jams
+Starting via JAMS Host on pintjams2
+Process ID 4232
+------------------------------------------------------------
+13:46:01 - 
+13:46:01 - JAMS SERVER REBOOT - version 4.2
+13:46:01 - 
+13:46:01 - REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT
+13:46:01 - REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT
+13:46:01 - REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT
+13:46:01 - REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT
+13:46:01 - REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT
+13:46:01 - 
+13:46:01 -   WARNING:  REBOOTING of the servers will actuall be performed
+13:46:01 - 
+13:46:01 - REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT
+13:46:01 - REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT
+13:46:01 - REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT
+13:46:01 - REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT
+13:46:01 - REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT
+13:46:01 - <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< PARAMETERS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+13:46:01 - psa4islab2v.samcmo.com:Spooler:Microsoft Antimalware Scheduled Scan,ScheduledDefrag:service=Spooler=Running
+13:46:01 - sleep30:::
+13:46:01 - job001::\SAMC_specalized_jobs\SERVER_REBOOTS\TEST_GROUP\TEST_RYANS_LAB:
+13:46:01 - psa4islab3v.samcmo.com:NULL,Spooler::service=W32Time=Running,service=Spooler=Running
+13:46:01 - <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< PARAMETERS END >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+13:46:01 - ============================================================================================
+13:46:01 -  doing ASYNC servers first
+13:46:01 - ============================================================================================
+13:46:01 - ==============================================================================
+13:46:01 - <<<<< pre-check list - see what state server is in >>>>>
+13:46:01 - ==============================================================================
+13:46:01 - ==============================================================================
+13:46:01 - <<<<< STEP ONE - stop and  disable TASKS in this order >>>>>
+13:46:01 - ==============================================================================
+13:46:01 - 
+13:46:01 - 
+13:46:01 - 
+13:46:01 -   on psa4islab2v.samcmo.com, disable task Microsoft Antimalware Scheduled Scan,ScheduledDefrag
+13:46:01 - <<< processing: query on: psa4islab2v.samcmo.com TaskName: "Microsoft Antimalware Scheduled Scan" >>>
+13:46:02 -      Found: "\Microsoft\Microsoft Antimalware\Microsoft Antimalware Scheduled Scan"
+13:46:02 -           "\Microsoft\Microsoft Antimalware\Microsoft Antimalware Scheduled Scan"
+13:46:02 -    OK, task is on remote server, and in 'Ready or Running' state
+13:46:02 - <<< processing: end on: psa4islab2v.samcmo.com TaskName: Microsoft Antimalware Scheduled Scan >>>
+13:46:03 -      Found: "\Microsoft\Microsoft Antimalware\Microsoft Antimalware Scheduled Scan"
+13:46:03 -           "\Microsoft\Microsoft Antimalware\Microsoft Antimalware Scheduled Scan"
+13:46:03 - <<< processing: disable on: psa4islab2v.samcmo.com TaskName: Microsoft Antimalware Scheduled Scan >>>
+13:46:04 -      Found: "\Microsoft\Microsoft Antimalware\Microsoft Antimalware Scheduled Scan"
+13:46:04 -           "\Microsoft\Microsoft Antimalware\Microsoft Antimalware Scheduled Scan"
+13:46:04 -       SUCCESS - task was ended and disabled
+13:46:04 - <<< processing: query on: psa4islab2v.samcmo.com TaskName: "ScheduledDefrag" >>>
+13:46:05 -      Found: "\Microsoft\Windows\Defrag\ScheduledDefrag"
+13:46:05 -           "\Microsoft\Windows\Defrag\ScheduledDefrag"
+13:46:05 -    OK, task is on remote server, and in 'Ready or Running' state
+13:46:05 - <<< processing: end on: psa4islab2v.samcmo.com TaskName: ScheduledDefrag >>>
+13:46:07 -      Found: "\Microsoft\Windows\Defrag\ScheduledDefrag"
+13:46:07 -           "\Microsoft\Windows\Defrag\ScheduledDefrag"
+13:46:07 - <<< processing: disable on: psa4islab2v.samcmo.com TaskName: ScheduledDefrag >>>
+13:46:08 -      Found: "\Microsoft\Windows\Defrag\ScheduledDefrag"
+13:46:08 -           "\Microsoft\Windows\Defrag\ScheduledDefrag"
+13:46:08 -       SUCCESS - task was ended and disabled
+13:46:08 - ==============================================================================
+13:46:08 - <<<<< STEP TWO - disable SERVICES in this order >>>>>
+13:46:08 - ==============================================================================
+13:46:08 - 
+13:46:08 -   on psa4islab3v.samcmo.com, disable service  NULL,Spooler
+13:46:08 - 		 command: sc \\psa4islab3v.samcmo.com stop NULL
+13:46:08 - 			Serice status:  Running
+13:46:08 - On server: psa4islab3v.samcmo.com, service: NULL, will be: stop
+13:46:08 - Current state is:  on  is Running
+13:46:08 - Stopping service: NULL
+13:46:08 - SUCCESS: NULL on psa4islab3v.samcmo.com is Stopped
+13:46:08 - 		 command: sc \\psa4islab3v.samcmo.com stop Spooler
+13:46:08 - 			Serice status:  Running
+13:46:08 - On server: psa4islab3v.samcmo.com, service: Spooler, will be: stop
+13:46:08 - Current state is:  on  is Running
+13:46:08 - Stopping service: Spooler
+13:46:08 - SUCCESS: Spooler on psa4islab3v.samcmo.com is Stopped
+13:46:08 - 
+13:46:08 - 
+13:46:08 -   on psa4islab2v.samcmo.com, disable service  Spooler
+13:46:08 - 		 command: sc \\psa4islab2v.samcmo.com stop Spooler
+13:46:08 - 			Serice status:  Running
+13:46:08 - On server: psa4islab2v.samcmo.com, service: Spooler, will be: stop
+13:46:08 - Current state is:  on  is Running
+13:46:08 - Stopping service: Spooler
+13:46:09 - SUCCESS: Spooler on psa4islab2v.samcmo.com is Stopped
+13:46:09 - ==============================================================================
+13:46:09 - <<<<< STEP THREE - reboot servers in this order in this order >>>>>
+13:46:09 - ==============================================================================
+13:46:09 - 
+13:46:09 - psa4islab2v.samcmo.com
+13:46:09 - 		command: reboot_the_server psa4islab2v.samcmo.com
+13:46:09 - 			psa4islab2v.samcmo.com status:  OK
+13:46:09 - 		*** wait_for_it psa4islab2v.samcmo.com  service=Spooler=Running
+13:46:09 - XXYYZZ: service=Spooler=Running
+13:46:09 - passing: psa4islab2v.samcmo.com Spooler 'query'
+13:46:09 - On server: psa4islab2v.samcmo.com, service: Spooler, will be: query
+13:46:09 - Current state is:  on  is Stopped
+13:46:09 - Performing actual reboot of server: psa4islab2v.samcmo.com
+13:46:09 -      System.Management.ManagementBaseObject
+13:46:09 - Going - waiting for psa4islab2v.samcmo.com to stop answering pings
+13:46:11 - Going - waiting for psa4islab2v.samcmo.com to stop answering pings
+13:46:13 - Going - waiting for psa4islab2v.samcmo.com to stop answering pings
+13:46:15 - Going - waiting for psa4islab2v.samcmo.com to stop answering pings
+13:46:17 - Going - waiting for psa4islab2v.samcmo.com to stop answering pings
+13:46:24 - Gone psa4islab2v.samcmo.com no longer answering pings
+13:46:29 - Waiting for server psa4islab2v.samcmo.com to answer pings
+13:46:44 - Waiting for server psa4islab2v.samcmo.com to answer pings
+13:46:59 - Waiting for server psa4islab2v.samcmo.com to answer pings
+13:47:14 - Waiting for server psa4islab2v.samcmo.com to answer pings
+13:47:29 - Waiting for server psa4islab2v.samcmo.com to answer pings
+13:47:44 - Waiting for server psa4islab2v.samcmo.com to answer pings
+13:47:54 - Waiting for server psa4islab2v.samcmo.com to answer pings
+13:48:04 - psa4islab2v.samcmo.com is now answering pings
+13:48:04 - will now wait until server responds to the systeminfo command
+13:48:04 - performing systeminfo command
+13:48:04 - Waiting for server to respond to systeminfo command
+13:48:41 - systeminfo: Success
+13:48:51 - 
+13:48:51 - ===> On server: psa4islab2v.samcmo.com, Performing Wait For: service=Spooler=Running
+13:48:51 - 
+13:48:51 - svc.status for Spooler is:  Running
+13:48:51 -  			service=Spooler=Running has been met
+13:48:51 - 
+13:48:51 - Number of seconds to SLEEP before proceeding  30
+13:48:51 - 			Sleeping for 30 seconds
+13:49:21 - 			Done sleeping
+13:49:21 - 
+13:49:21 - JOB to be executed and wait for completion: \SAMC_specalized_jobs\SERVER_REBOOTS\TEST_GROUP\TEST_RYANS_LAB
+13:49:21 - SUCCESS: job was found
+13:49:21 - submitting the job, and waiting for completion
+13:49:22 - Job has completed, continue on JAMSEntry:  8201
+13:49:22 - LOG:  D:\ProgramData\JAMS\Logs\TEST_RYANS_LAB_0002BBD1.log
+13:49:22 - joblog=> JAMS Version 6.1.270.0 on PINTJAMS2
+13:49:22 - joblog=> Entry 8201 starting at 2/12/2015 1:49:21 PM
+13:49:22 - joblog=> Submitted by SAMCMO\Jams at 2/12/2015 1:49:21 PM
+13:49:22 - joblog=> Executing as samcmo\jams
+13:49:22 - joblog=> Starting via JAMS Host on pintjams2
+13:49:22 - joblog=> Process ID 4056
+13:49:22 - joblog=> ------------------------------------------------------------
+13:49:22 - joblog=> 13:49:22 - This will wait for the java process, owned by: KronosAdminSVC to have a thread counte greater than: 242
+13:49:22 - joblog=> 13:49:22 - Found: java on pintkronosweb05; PID: 5968
+13:49:22 - joblog=> 13:49:22 - Thread count; 297 IS greater than 242
+13:49:22 - joblog=> 
+13:49:22 - joblog=> ------------------------------------------------------------
+13:49:22 - joblog=> Final Status Code: 0, Severity: Success
+13:49:22 - joblog=> Final Status: The operation completed successfully
+13:49:22 - joblog=> ------------------------------------------------------------
+13:49:22 - joblog=> Job Completed at:      2/12/2015 1:49:22 PM
+13:49:22 - joblog=> Elapsed Time:          00:00:00.6093715
+13:49:22 - joblog=> Kernel mode CPU Time:  00:00:00.0781250
+13:49:22 - joblog=> User mode CPU Time:    00:00:00.4218750
+13:49:22 - joblog=> Read operation count:  536
+13:49:22 - joblog=> Write operation count: 74
+13:49:22 - joblog=> Other operation count: 1073
+13:49:22 - joblog=> Read byte count:       1753346
+13:49:22 - joblog=> Write byte count:      18638
+13:49:22 - joblog=> Other byte count:      16628
+13:49:22 - joblog=> Total page faults:     17428
+13:49:22 - joblog=> Total process count:   0
+13:49:22 - joblog=> Peak process memory:   53460992
+13:49:22 - joblog=> Peak job memory:       53460992
+13:49:22 - joblog=> ------------------------------------------------------------
+13:49:22 - 
+13:49:22 - psa4islab3v.samcmo.com
+13:49:22 - 		command: reboot_the_server psa4islab3v.samcmo.com
+13:49:22 - 			psa4islab3v.samcmo.com status:  OK
+13:49:22 - 		*** wait_for_it psa4islab3v.samcmo.com  service=W32Time=Running,service=Spooler=Running
+13:49:22 - XXYYZZ: service=W32Time=Running
+13:49:22 - passing: psa4islab3v.samcmo.com W32Time 'query'
+13:49:22 - On server: psa4islab3v.samcmo.com, service: W32Time, will be: query
+13:49:22 - Current state is:  on  is Running
+13:49:22 - XXYYZZ: service=Spooler=Running
+13:49:22 - passing: psa4islab3v.samcmo.com Spooler 'query'
+13:49:22 - On server: psa4islab3v.samcmo.com, service: Spooler, will be: query
+13:49:22 - Current state is:  on  is Stopped
+13:49:22 - Performing actual reboot of server: psa4islab3v.samcmo.com
+13:49:22 -      System.Management.ManagementBaseObject
+13:49:22 - Going - waiting for psa4islab3v.samcmo.com to stop answering pings
+13:49:24 - Going - waiting for psa4islab3v.samcmo.com to stop answering pings
+13:49:31 - Gone psa4islab3v.samcmo.com no longer answering pings
+13:49:36 - Waiting for server psa4islab3v.samcmo.com to answer pings
+13:49:51 - Waiting for server psa4islab3v.samcmo.com to answer pings
+
+

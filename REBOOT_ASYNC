@@ -1,0 +1,183 @@
+# add-pssnapin mvpsi.jams
+#
+# This script will simply read it's variable that was created for it from the WIN_____SERVER_REBOOTS
+#
+# It will then erase the variable (tidy up after itself), then go about the task of rebooting
+# the server specified in the variable.  The format of the variable is:
+#
+#  A servername
+#
+#  Where "A" is either a 'y' or 'n' - a 'y' designates that this is just a "trial run" that
+#     no actual rebooting takes place, just tap the server on the shoulder to make sure that
+#     the jams user running this job has correct permissions, plus the server is alive
+#
+#        "servername" is the actual name of the server for which a reboot is to be performed.
+#
+# multiple of these jobs can be independently kicked off by the WIN_____SERVER_REBOOTS - thinking
+# behind this.. if any server hangs, only the job rebooting that server will be affected, the remainder
+# of the ASYNC reboots will continue on.
+
+$VER="1.0"  # 2/3/2015 - hsamm - initial version
+
+function TS
+{
+   $TIMS=get-date -format "HH:mm:ss"
+   write-host -nonewline "$TIMS - "
+}
+
+
+function reboot_the_server
+{  
+   param($machine_name)
+
+   # Set-PSdebug -trace 2
+  TS; write-host "Performing actual reboot of server: $machine_name"
+   $machine = Get-WMIObject win32_operatingsystem -computer $machine_name
+   $machine.Reboot() | foreach {
+      TS; write-host "     $_"
+   }
+   #
+   #  Wait until the machine is gone 
+   #
+   $ping = new-object System.Net.Networkinformation.Ping
+   do
+   {
+     TS; write-host "Going - waiting for $machine_name to stop answering pings"
+     Start-Sleep -s 2
+	   $result = $ping.send($machine_name);
+   } Until($result.status -ne "Success")
+   TS; write-host "Gone $machine_name no longer answering pings"
+   #
+   #  Wait until the machine comes back
+   #
+   do
+   {
+	   $result = $ping.send($machine_name);
+     TS; write-host "Waiting for server $machine_name to answer pings"
+     Start-Sleep -s 10
+   } Until($result.status -eq "Success")
+   TS; write-host "$machine_name is now answering pings"
+   TS; write-host "will now wait until server responds to the systeminfo command"
+   $RSVP1=""
+   do
+   {
+      TS; write-host "performing systeminfo command"
+      $command="systeminfo /s $machine_name "
+      $RSVP1=" "
+      TS; write-host "Waiting for server to respond to systeminfo command"
+      Invoke-Expression $command | ForEach-Object{
+        
+
+         if($_.Contains(" Time:")){
+             $RSVP1="Success"
+             TS; write-host "systeminfo: Success"
+             
+         }
+      }
+      start-sleep -s 10
+   }until ($RSVP1 -eq "Success")
+  
+
+   set-PSdebug -trace 0
+   
+}
+
+
+
+function WARN
+{ 
+   param ($message, $diags)
+   TS; write-host "WARNING WARNING WARNING"
+   TS; write-host "WARNING WARNING WARNING --- $message"
+   TS; write-host "WARNING WARNING WARNING"
+   TS; write-host "====================  Diagnostics follows:============================================"
+   $diags
+   write-host "======================================================================================"
+   if($Global:SHOWONLY -eq "y"){
+      $Global:THROWUP=1
+   }else{
+      TS; write-host "THIS IS AN ACTUAL RUN, THE PARAMETER WILL BE IGNORED"
+      $Global:THROWUP=1
+   }
+
+}
+
+#
+# get my JAMS entry number, this is needed so that I can get my variable
+# info.
+Import-Module JAMS
+
+$jamsinfo = Get-JAMSEntry $Host.PrivateData.JAMSEntry
+
+TS; write-host "JAMS ENTRY number is " $jamsinfo.JAMSEntry
+$VARNAME="ASYNC_" +$jamsinfo.JAMSENTRY
+$a=Get-JamsVariable -name \SAMC_specalized_jobs\SERVER_REBOOTS\TEMP\$VARNAME -ValueOnly
+
+TS; write-host "Value of MyNewVar is: " $a
+$parminfo=$a.split(" ")
+$GLOBAL:SHOWONLY=($parminfo[0])
+$GLOBAL:SERVERNAME=($parminfo[1])
+
+
+Set-Location JAMS::localhost\SAMC_specalized_jobs\SERVER_REBOOTS\TEMP
+Remove-Item $VARNAME
+
+
+
+TS; write-host ""
+TS; write-host "JAMS ASYNC SERVER REBOOT - version $VER"
+TS; write-host ""
+TS; write-host "For server: " $GLOBAL:SERVERNAME
+
+
+
+$GLOBAL:THROWUP=0      # used for tial run, if any errors occur, set this switch to 1, but continue on processing.
+
+if($SHOWONLY -eq "y"){
+   
+   TS; write-host "TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN"
+   TS; write-host "TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN"
+   TS; write-host "TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN"
+   TS; write-host "TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN"
+   TS; write-host ""
+   TS; write-host "  NO ACTUAL REBOOT WILL OCCUR, SHOW_ONLY SET TO 'Y'"
+   TS; write-host ""
+   TS; write-host "TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN"
+   TS; write-host "TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN"
+   TS; write-host "TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN"
+   TS; write-host "TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN     TRIAL RUN"
+}else{
+   
+   TS; write-host "REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT"
+   TS; write-host "REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT"
+   TS; write-host "REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT"
+   TS; write-host "REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT"
+   TS; write-host "REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT"
+   TS; write-host ""
+   TS; write-host "  WARNING:  REBOOTING of the servers will actuall be performed"
+   TS; write-host ""
+   TS; write-host "REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT"
+   TS; write-host "REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT"
+   TS; write-host "REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT"
+   TS; write-host "REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT"
+   TS; write-host "REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT     REBOOT"
+}
+
+
+
+TS; write-host "=============================================================================="
+TS; write-host "<<<<< STEP THREE - reboot servers in this order in this order >>>>>"
+TS; write-host "=============================================================================="
+
+
+if($GLOBAL:SHOWONLY -eq "y"){
+   
+   $machine = Get-WMIObject win32_operatingsystem -computer $GLOBAL:SERVERNAME -ErrorAction SilentlyContinue -ErrorVariable NoWMI
+   if($NoWMI){
+      throw "ERROR - unable to connect to server $GLOBAL:SERVERNAME"  
+   }
+   TS; write-host "SERVER: $GLOBAL:SERVERNAME OK"
+}else{
+   reboot_the_server $GLOBAL:SERVERNAME
+}
+
