@@ -1,0 +1,1 @@
+﻿SQLCMD -S "<<pServerName>>" -d "<<pDBName>>" -i "<<pSQLFolder>>\<<pSQLScriptFile>>.SQL" -e -b

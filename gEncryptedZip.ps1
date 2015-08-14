@@ -1,0 +1,1 @@
+﻿"c:\program Files\7-Zip\7z.exe" a -p <<pZipPassword>> "<<pZipFolder>><<pZipFileName>>.zip" "<<pSourceFolder>><<pSourceFileName>>.<<pSourceFileExtension>>" -w"<<pZipFolder>>"

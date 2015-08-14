@@ -1,0 +1,1 @@
+﻿bcp.exe "<<pTableName>>" out "<<pOutFolder>><<pOutFileName>>.<<pOutFileExtension>>" -S <<pSQLServerName>> -d <<pDatabaseName>> -T -c -t<<pFieldDelimeter>>
