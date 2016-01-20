@@ -1,7 +1,7 @@
 ##############################################################################
 # Script        : Delete_HostKeys.dat
 # Purpose       : "@(#) Purpose: Delete HostKeys.dat file from Active server"
-# Copyright     : 2016 United Natural Foods, Inc.
+# Contributor   : 2016 United Natural Foods, Inc.
 # Control       : "@(#) Revision: 1.0.0"
 # Description   : Deletes the HostKeys.dat file from the Active server if needed
 # History       : 2016/01/15 - 1.0.0 - PWM - Created
